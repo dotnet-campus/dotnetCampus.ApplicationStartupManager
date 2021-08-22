@@ -5,11 +5,11 @@
     <PackageOutputPath>$(MSBuildThisFileDirectory)bin\$(Configuration)</PackageOutputPath>
     <Company>dotnet campus（.NET 职业技术学院）</Company>
  
-    <!-- 替换下面信息 -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>dotnet-campus</Authors>
     <RepositoryUrl>https://github.com/dotnet-campus/dotnetCampus.ApplicationStartupManager</RepositoryUrl>
     <PackageProjectUrl>https://github.com/dotnet-campus/dotnetCampus.ApplicationStartupManager</PackageProjectUrl>
-    <Description>TODO: 请在此处添加包描述信息。</Description>
+    <Description>Application startup manager</Description>
 
     <RepositoryType>git</RepositoryType>
     <Copyright>Copyright © 2021 dotnet campus, All Rights Reserved.</Copyright> 
