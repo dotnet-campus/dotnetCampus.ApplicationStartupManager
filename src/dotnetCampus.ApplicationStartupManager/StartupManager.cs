@@ -14,6 +14,8 @@ namespace dotnetCampus.ApplicationStartupManager
 {
     public class StartupManager : IStartupManager //, IStartupManagerLegacy
     {
+        private readonly IMainThreadDispatcher _dispatcher;
+
         /// <summary>
         /// Builder 模式所需状态：包含当前剩余需要管理的启动任务程序集。
         /// </summary>
@@ -47,7 +49,7 @@ namespace dotnetCampus.ApplicationStartupManager
         private IStartupLogger Logger => Context.Logger;
 
         public StartupManager(IStartupLogger logger, FileConfigurationRepo configurationRepo,
-            Func<Exception, Task> fastFailAction)
+            Func<Exception, Task> fastFailAction, IMainThreadDispatcher dispatcher)
         {
             if (logger == null)
             {
@@ -58,6 +60,8 @@ namespace dotnetCampus.ApplicationStartupManager
             {
                 throw new ArgumentNullException(nameof(configurationRepo));
             }
+
+            _dispatcher = dispatcher;
 
             ThreadPool.GetMinThreads(out _workerThreads, out _completionPortThreads);
             //启动期间存在大量的线程池调用（包含IO操作），而创建的多数线程在等待 IO 时都是不会被调度的
@@ -99,7 +103,7 @@ namespace dotnetCampus.ApplicationStartupManager
         /// 使用此方法可以添加一些虚拟的，实际上不会执行任何启动任务的关键启动节点，用于汇总其他模块的依赖关系。
         /// </para>
         /// </remarks>
-        public StartupManager UseCriticalNodes( params string[] criticalNodeKeys)
+        public StartupManager UseCriticalNodes(params string[] criticalNodeKeys)
         {
             if (criticalNodeKeys == null)
             {
@@ -165,7 +169,7 @@ namespace dotnetCampus.ApplicationStartupManager
             wrapper.StartupTask = new NullObjectStartup();
             wrapper.Categories = StartupCategory.All;
 
-            if (beforeTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is string[] before)
+            if (beforeTasks?.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries) is string[] before)
             {
                 foreach (var b in before)
                 {
@@ -174,7 +178,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 }
             }
 
-            if (afterTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is string[] after)
+            if (afterTasks?.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries) is string[] after)
             {
                 foreach (var a in after)
                 {
@@ -193,7 +197,8 @@ namespace dotnetCampus.ApplicationStartupManager
             return this;
         }
 
-        public StartupManager ForStartupTasksOfCategory(StartupCategory category, Action<StartupTaskBuilder> taskBuilder)
+        public StartupManager ForStartupTasksOfCategory(StartupCategory category,
+            Action<StartupTaskBuilder> taskBuilder)
         {
             _additionalBuilders.Add(builder =>
             {
@@ -213,13 +218,13 @@ namespace dotnetCampus.ApplicationStartupManager
                 Logger.RecordTime("GraphBuilded");
             }
 
-            // todo dispatcher   var dispatcher = Application.Current.Dispatcher;
+            var dispatcher = _dispatcher;
             foreach (var wrapper in Graph)
             {
                 var startupTasks = wrapper.Dependencies.Select(s => GetStartupTaskWrapper(s).StartupTask);
                 if (wrapper.UIOnly)
                 {
-                    // todo dispatcher     await dispatcher.InvokeAsync(() => wrapper.ExecuteTask(startupTasks, Context));
+                    await dispatcher.InvokeAsync(() => wrapper.ExecuteTask(startupTasks, Context));
                 }
                 else
                 {
@@ -231,22 +236,21 @@ namespace dotnetCampus.ApplicationStartupManager
 
             Logger.RecordTime("AllStartupTasksCompleted");
 
-            // todo dispatcher
-//            Debug.WriteLine(Logger);
-//#pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
-//            dispatcher.InvokeAsync(() =>
-//                Logger.ReportResult(Graph.OfType<IStartupTaskWrapper>().ToList()));
-//#pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+            Debug.WriteLine(Logger);
+#pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+            dispatcher.InvokeAsync(() =>
+                Logger.ReportResult(Graph.OfType<IStartupTaskWrapper>().ToList()));
+#pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
 
             ThreadPool.SetMinThreads(Math.Max(_workerThreads, 8), Math.Max(_completionPortThreads, 8));
         }
 
-        public void RunLegacy(StartupTask task)
-        {
-#pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
-            task.JoinAsync(null, true);
-#pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
-        }
+//        public void RunLegacy(StartupTask task)
+//        {
+//#pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+//            task.JoinAsync(null, true);
+//#pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+//        }
 
         private List<StartupTaskWrapper> BuildStartupGraph()
         {
@@ -314,7 +318,8 @@ namespace dotnetCampus.ApplicationStartupManager
 
             void AddDependencies(StartupTaskWrapper wrapper, string afterTasks)
             {
-                foreach (var task in afterTasks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(CompatibleTaskName))
+                foreach (var task in afterTasks.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(CompatibleTaskName))
                 {
                     if (!taskMetadataList.Exists(metadata => metadata.Key == task)
                         && !wrappers.Exists(taskWrapper => taskWrapper.StartupTaskKey == task))
@@ -333,7 +338,8 @@ namespace dotnetCampus.ApplicationStartupManager
 
             void AddFollowTasks(StartupTaskWrapper wrapper, string beforeTasks)
             {
-                foreach (var task in beforeTasks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(CompatibleTaskName))
+                foreach (var task in beforeTasks.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(CompatibleTaskName))
                 {
                     if (!taskMetadataList.Exists(metadata => metadata.Key == task)
                         && !wrappers.Exists(taskWrapper => taskWrapper.StartupTaskKey == task))
@@ -404,7 +410,7 @@ namespace dotnetCampus.ApplicationStartupManager
                     time = DFSVisit(wrapper, time);
                 }
             }
-          
+
             visitWrapper.VisitedFinishTime = time + 1;
             visitWrapper.IsVisited = VisitState.Visited;
             return visitWrapper.VisitedFinishTime;
