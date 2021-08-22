@@ -25,13 +25,13 @@ namespace dotnetCampus.ApplicationStartupManager
         Task IStartupContext.WaitStartupTaskAsync(string startupKey) => _waitStartupTaskAsync(startupKey);
 
         public StartupContext(IStartupLogger logger, FileConfigurationRepo configuration,
-            Func<Exception, Task> fastfailAction, Func<string, Task> waitStartupAsync)
+            Func<Exception, Task> fastFailAction, Func<string, Task> waitStartupAsync)
         {
             Logger = logger;
             Configuration = configuration;
             _waitStartupTaskAsync = waitStartupAsync;
             Configs = configuration.CreateAppConfigurator();
-            FastFail = fastfailAction ?? (exception => StartupTask.CompletedTask);
+            FastFail = fastFailAction ?? (exception => StartupTask.CompletedTask);
         }
     }
 }
