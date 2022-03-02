@@ -42,11 +42,12 @@ namespace dotnetCampus.ApplicationStartupManager
         internal ConcurrentDictionary<string, StartupTaskWrapper> StartupTaskWrappers { get; } =
             new ConcurrentDictionary<string, StartupTaskWrapper>();
 
-        private List<StartupTaskWrapper> Graph { get; set; }
+        private List<StartupTaskWrapper>? Graph { get; set; }
 
         private StartupContext Context { get; }
+        protected IStartupContext StartupContext => Context;
 
-        private IStartupLogger Logger => Context.Logger;
+        protected IStartupLogger Logger => Context.Logger;
 
         public StartupManagerBase(IStartupLogger logger, /*FileConfigurationRepo configurationRepo,*/
             Func<Exception, Task> fastFailAction, IMainThreadDispatcher dispatcher, bool shouldSetThreadPool = true)
@@ -73,7 +74,6 @@ namespace dotnetCampus.ApplicationStartupManager
 
             Context = new StartupContext(logger, /*configurationRepo,*/
                 fastFailAction, WaitStartupTaskAsync);
-
             Logger.RecordTime("ManagerInitialized");
         }
 
@@ -454,10 +454,9 @@ namespace dotnetCampus.ApplicationStartupManager
         private static string StartupTypeToKey(Type type)
             => type.Name.Remove(type.Name.Length - "startup".Length);
 
-        internal virtual Task<string> ExecuteStartupTaskAsync(StartupTaskBase startupTask, IStartupContext context,
-            bool uiOnly)
+        internal virtual Task<string> ExecuteStartupTaskAsync(StartupTaskBase startupTask,IStartupContext context, bool uiOnly)
         {
-            return startupTask.JoinAsync(context, uiOnly);
+            return startupTask.JoinAsync(Context, uiOnly);
         }
     }
 }
