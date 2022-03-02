@@ -9,6 +9,7 @@ namespace dotnetCampus.ApplicationStartupManager
     [DebuggerDisplay("{StartupTaskKey}:{IsVisited},{VisitedFinishTime}")]
     internal class StartupTaskWrapper : IStartupTaskWrapper
     {
+        private readonly StartupManager _manager;
         public HashSet<string> FollowTasks { get; private set; } = new HashSet<string>();
         public HashSet<string> Dependencies { get; private set; } = new HashSet<string>();
 
@@ -24,8 +25,9 @@ namespace dotnetCampus.ApplicationStartupManager
         public bool UIOnly { get; internal set; }
         public StartupCriticalLevel CriticalLevel { get; set; }
 
-        public StartupTaskWrapper(string startupTaskKey)
+        public StartupTaskWrapper(string startupTaskKey, StartupManager manager)
         {
+            _manager = manager;
             StartupTaskKey = startupTaskKey;
         }
 
@@ -43,7 +45,7 @@ namespace dotnetCampus.ApplicationStartupManager
                             //todo Tracer.Info($"[Startup]关键节点：{StartupTaskKey}开始执行");
                         }
 
-                        var result = await TaskBase.JoinAsync(context, UIOnly);
+                        var result = await _manager.ExecuteStartupTaskAsync(TaskBase, context, UIOnly);
 
                         if (CriticalLevel == StartupCriticalLevel.Critical)
                         {

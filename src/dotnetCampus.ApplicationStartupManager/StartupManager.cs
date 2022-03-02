@@ -431,7 +431,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 return wrapper;
             }
 
-            wrapper = new StartupTaskWrapper(startupTaskKey);
+            wrapper = new StartupTaskWrapper(startupTaskKey, this);
             if (StartupTaskWrappers.TryAdd(startupTaskKey, wrapper))
             {
                 return wrapper;
@@ -453,5 +453,11 @@ namespace dotnetCampus.ApplicationStartupManager
 
         private static string StartupTypeToKey(Type type)
             => type.Name.Remove(type.Name.Length - "startup".Length);
+
+        protected virtual Task<string> ExecuteStartupTaskAsync(StartupTaskBase startupTask, IStartupContext context,
+            bool uiOnly)
+        {
+            return startupTask.JoinAsync(context, uiOnly);
+        }
     }
 }
