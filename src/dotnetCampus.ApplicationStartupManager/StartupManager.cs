@@ -98,7 +98,7 @@ namespace dotnetCampus.ApplicationStartupManager
         /// </summary>
         /// <param name="collector"></param>
         /// <returns></returns>
-        public StartupManager AddStartupTaskMetadataCollector(Func<IEnumerable<StartupTaskMetadata>> collector)
+        public virtual StartupManager AddStartupTaskMetadataCollector(Func<IEnumerable<StartupTaskMetadata>> collector)
         {
             // 可能的限制尚未完成：
             // 1. Run 之后不能再调用此方法（适用于固定的程序集应用）；
