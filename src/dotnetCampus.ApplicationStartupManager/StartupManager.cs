@@ -312,17 +312,6 @@ namespace dotnetCampus.ApplicationStartupManager
 
             return DFSGraph(wrappers);
 
-            IEnumerable<StartupTaskMetadata> ExportStartupTasks()
-            {
-                foreach (var func in _startupTaskMetadataCollectorList)
-                {
-                    foreach (var taskMetadata in func())
-                    {
-                        yield return taskMetadata;
-                    }
-                }
-            }
-
             void AddDependencies(StartupTaskWrapper wrapper, string afterTasks)
             {
                 foreach (var task in afterTasks.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries)
@@ -360,6 +349,18 @@ namespace dotnetCampus.ApplicationStartupManager
                         wrapper.FollowTasks.Add(task);
                         followedWrappers.Dependencies.Add(wrapper.StartupTaskKey);
                     }
+                }
+            }
+        }
+
+        protected virtual IEnumerable<StartupTaskMetadata> ExportStartupTasks()
+        {
+            foreach (var func in _startupTaskMetadataCollectorList)
+            {
+                var taskMetadataList = func();
+                foreach (var taskMetadata in taskMetadataList)
+                {
+                    yield return taskMetadata;
                 }
             }
         }
