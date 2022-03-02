@@ -9,7 +9,7 @@ namespace dotnetCampus.ApplicationStartupManager
     [DebuggerDisplay("{StartupTaskKey}:{IsVisited},{VisitedFinishTime}")]
     internal class StartupTaskWrapper : IStartupTaskWrapper
     {
-        private readonly StartupManager _manager;
+        private readonly StartupManagerBase _manager;
         public HashSet<string> FollowTasks { get; private set; } = new HashSet<string>();
         public HashSet<string> Dependencies { get; private set; } = new HashSet<string>();
 
@@ -25,7 +25,7 @@ namespace dotnetCampus.ApplicationStartupManager
         public bool UIOnly { get; internal set; }
         public StartupCriticalLevel CriticalLevel { get; set; }
 
-        public StartupTaskWrapper(string startupTaskKey, StartupManager manager)
+        public StartupTaskWrapper(string startupTaskKey, StartupManagerBase manager)
         {
             _manager = manager;
             StartupTaskKey = startupTaskKey;

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace dotnetCampus.ApplicationStartupManager
 {
-    public class StartupManager : IStartupManager
+    public class StartupManagerBase : IStartupManager
     {
         private readonly IMainThreadDispatcher _dispatcher;
 
@@ -48,7 +48,7 @@ namespace dotnetCampus.ApplicationStartupManager
 
         private IStartupLogger Logger => Context.Logger;
 
-        public StartupManager(IStartupLogger logger, /*FileConfigurationRepo configurationRepo,*/
+        public StartupManagerBase(IStartupLogger logger, /*FileConfigurationRepo configurationRepo,*/
             Func<Exception, Task> fastFailAction, IMainThreadDispatcher dispatcher, bool shouldSetThreadPool = true)
         {
             if (logger == null)
@@ -83,7 +83,7 @@ namespace dotnetCampus.ApplicationStartupManager
         ///// </summary>
         ///// <param name="assemblies"></param>
         ///// <returns></returns>
-        //public StartupManager ConfigAssemblies(IEnumerable<Assembly> assemblies)
+        //public StartupManagerBase ConfigAssemblies(IEnumerable<Assembly> assemblies)
         //{
         //    // 可能的限制尚未完成：
         //    // 1. Run 之后不能再调用此方法（适用于固定的程序集应用）；
@@ -93,12 +93,12 @@ namespace dotnetCampus.ApplicationStartupManager
         //}
 
         /// <summary>
-        /// 配置被 <see cref="StartupManager"/> 管理的程序集。
+        /// 配置被 <see cref="StartupManagerBase"/> 管理的程序集。
         /// 只有被管理的程序集中的启动信息、依赖注入信息才会被执行。
         /// </summary>
         /// <param name="collector"></param>
         /// <returns></returns>
-        public virtual StartupManager AddStartupTaskMetadataCollector(Func<IEnumerable<StartupTaskMetadata>> collector)
+        public virtual StartupManagerBase AddStartupTaskMetadataCollector(Func<IEnumerable<StartupTaskMetadata>> collector)
         {
             // 可能的限制尚未完成：
             // 1. Run 之后不能再调用此方法（适用于固定的程序集应用）；
@@ -114,14 +114,14 @@ namespace dotnetCampus.ApplicationStartupManager
         /// 例如传入 A、B、C、D 四个关键启动节点，那么 A - B - C - D 将依次执行，其他任务将插入其中。
         /// </summary>
         /// <param name="criticalNodeKeys">关键启动节点的名称。</param>
-        /// <returns><see cref="StartupManager"/> 实例自身，用于使用重建者模式创建启动流程管理器。</returns>
+        /// <returns><see cref="StartupManagerBase"/> 实例自身，用于使用重建者模式创建启动流程管理器。</returns>
         /// <remarks>
         /// <para>
         /// 通常情况下你可以编写常规的 StartupTask 来添加一个关键节点，只要这个节点被众多节点声明了依赖，那么它就能视为一个关键节点。
         /// 使用此方法可以添加一些虚拟的，实际上不会执行任何启动任务的关键启动节点，用于汇总其他模块的依赖关系。
         /// </para>
         /// </remarks>
-        public StartupManager UseCriticalNodes(params string[] criticalNodeKeys)
+        public StartupManagerBase UseCriticalNodes(params string[] criticalNodeKeys)
         {
             if (criticalNodeKeys == null)
             {
@@ -170,7 +170,7 @@ namespace dotnetCampus.ApplicationStartupManager
         /// <param name="nodeName">关键节点的名称。</param>
         /// <param name="beforeTasks">关键节点的前置节点。</param>
         /// <param name="afterTasks">关键节点的后置节点。</param>
-        /// <returns><see cref="StartupManager"/> 实例自身，用于使用重建者模式创建启动流程管理器。</returns>
+        /// <returns><see cref="StartupManagerBase"/> 实例自身，用于使用重建者模式创建启动流程管理器。</returns>
         /// <remarks>
         /// <para>
         /// 通常情况下你可以编写常规的 StartupTask 来添加一个关键节点，只要这个节点被众多节点声明了依赖，那么它就能视为一个关键节点。
@@ -181,7 +181,7 @@ namespace dotnetCampus.ApplicationStartupManager
         /// 例如，你需要根据不同的启动条件决定不同的启动顺序，那么你可能需要使用此方法动态生成关键节点。
         /// </para>
         /// </remarks>
-        public StartupManager AddCriticalNodes(string nodeName, string beforeTasks = null, string afterTasks = null)
+        public StartupManagerBase AddCriticalNodes(string nodeName, string beforeTasks = null, string afterTasks = null)
         {
             var wrapper = GetStartupTaskWrapper(nodeName);
             wrapper.TaskBase = new NullObjectStartup();
@@ -210,13 +210,13 @@ namespace dotnetCampus.ApplicationStartupManager
         }
 
         // 不支持被使用
-        //public StartupManager SelectNodes(StartupCategory categories)
+        //public StartupManagerBase SelectNodes(StartupCategory categories)
         //{
         //    _selectingCategories = categories;
         //    return this;
         //}
 
-        //public StartupManager ForStartupTasksOfCategory(StartupCategory category,
+        //public StartupManagerBase ForStartupTasksOfCategory(StartupCategory category,
         //    Action<StartupTaskBuilder> taskBuilder)
         //{
         //    _additionalBuilders.Add(builder =>
