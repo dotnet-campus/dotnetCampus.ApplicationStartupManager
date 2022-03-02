@@ -50,9 +50,8 @@ namespace dotnetCampus.ApplicationStartupManager
             }
         }
 
-        public void ReportResult(IReadOnlyList<IStartupTaskWrapper> wrappers)
+        public virtual void ReportResult(IReadOnlyList<IStartupTaskWrapper> wrappers)
         {
-            // todo 还没有具体实现
         }
     }
 }
