@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace dotnetCampus.ApplicationStartupManager
 {
-    public class StartupLogger : IStartupLogger
+    public class StartupLoggerBase : IStartupLogger
     {
         private readonly Stopwatch _mainWatch;
 
         private readonly ConcurrentDictionary<string, (string name, long start, long elapsed)>
             _milestoneDictionary = new ConcurrentDictionary<string, (string, long, long)>();
 
-        public StartupLogger()
+        public StartupLoggerBase()
         {
             _mainWatch = new Stopwatch();
             _mainWatch.Start();
