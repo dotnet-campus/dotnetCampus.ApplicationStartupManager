@@ -229,7 +229,7 @@ namespace dotnetCampus.ApplicationStartupManager
         //    return this;
         //}
 
-        public async void Run()
+        public virtual async void Run()
         {
             if (Graph == null)
             {
