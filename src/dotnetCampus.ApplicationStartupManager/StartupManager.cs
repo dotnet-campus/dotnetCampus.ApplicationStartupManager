@@ -8,7 +8,7 @@ using System.Net.Mime;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using dotnetCampus.Configurations.Core;
+//using dotnetCampus.Configurations.Core;
 
 namespace dotnetCampus.ApplicationStartupManager
 {
@@ -48,7 +48,7 @@ namespace dotnetCampus.ApplicationStartupManager
 
         private IStartupLogger Logger => Context.Logger;
 
-        public StartupManager(IStartupLogger logger, FileConfigurationRepo configurationRepo,
+        public StartupManager(IStartupLogger logger, /*FileConfigurationRepo configurationRepo,*/
             Func<Exception, Task> fastFailAction, IMainThreadDispatcher dispatcher, bool shouldSetThreadPool = true)
         {
             if (logger == null)
@@ -56,10 +56,10 @@ namespace dotnetCampus.ApplicationStartupManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (configurationRepo is null)
-            {
-                throw new ArgumentNullException(nameof(configurationRepo));
-            }
+            //if (configurationRepo is null)
+            //{
+            //    throw new ArgumentNullException(nameof(configurationRepo));
+            //}
 
             _dispatcher = dispatcher;
 
@@ -71,7 +71,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 ThreadPool.SetMinThreads(Math.Max(_workerThreads, 16), Math.Max(_completionPortThreads, 16));
             }
 
-            Context = new StartupContext(logger, configurationRepo,
+            Context = new StartupContext(logger, /*configurationRepo,*/
                 fastFailAction, WaitStartupTaskAsync);
 
             Logger.RecordTime("ManagerInitialized");
