@@ -16,10 +16,10 @@ namespace dotnetCampus.ApplicationStartupManager
     {
         private readonly IMainThreadDispatcher _dispatcher;
 
-        /// <summary>
-        /// Builder 模式所需状态：包含当前剩余需要管理的启动任务程序集。
-        /// </summary>
-        private readonly List<Assembly> _assembliesToBeManaged = new List<Assembly>();
+        ///// <summary>
+        ///// Builder 模式所需状态：包含当前剩余需要管理的启动任务程序集。
+        ///// </summary>
+        //private readonly List<Assembly> _assembliesToBeManaged = new List<Assembly>();
 
         /// <summary>
         /// Builder 模式所需状态：包含当前所有的关键启动任务。
@@ -77,20 +77,37 @@ namespace dotnetCampus.ApplicationStartupManager
             Logger.RecordTime("ManagerInitialized");
         }
 
+        ///// <summary>
+        ///// 配置被 <see cref="StartupManager"/> 管理的程序集。
+        ///// 只有被管理的程序集中的启动信息、依赖注入信息才会被执行。
+        ///// </summary>
+        ///// <param name="assemblies"></param>
+        ///// <returns></returns>
+        //public StartupManager ConfigAssemblies(IEnumerable<Assembly> assemblies)
+        //{
+        //    // 可能的限制尚未完成：
+        //    // 1. Run 之后不能再调用此方法（适用于固定的程序集应用）；
+        //    // 2. 可以多次 Config 然后多次 Run（适用于动态加载的插件程序集）。
+        //    _assembliesToBeManaged.AddRange(assemblies);
+        //    return this;
+        //}
+
         /// <summary>
         /// 配置被 <see cref="StartupManager"/> 管理的程序集。
         /// 只有被管理的程序集中的启动信息、依赖注入信息才会被执行。
         /// </summary>
-        /// <param name="assemblies"></param>
+        /// <param name="collector"></param>
         /// <returns></returns>
-        public StartupManager ConfigAssemblies(IEnumerable<Assembly> assemblies)
+        public StartupManager AddStartupTaskMetadataCollector(Func<IEnumerable<StartupTaskMetadata>> collector)
         {
             // 可能的限制尚未完成：
             // 1. Run 之后不能再调用此方法（适用于固定的程序集应用）；
             // 2. 可以多次 Config 然后多次 Run（适用于动态加载的插件程序集）。
-            _assembliesToBeManaged.AddRange(assemblies);
+            _startupTaskMetadataCollectorList.Add(collector);
             return this;
         }
+
+        private readonly ConcurrentBag<Func<IEnumerable<StartupTaskMetadata>>> _startupTaskMetadataCollectorList = new ConcurrentBag<Func<IEnumerable<StartupTaskMetadata>>>();
 
         /// <summary>
         /// 在启动流程中定义一组关键的启动节点。使用此方法定义的关键启动节点将按顺序前后依次依赖。
@@ -192,24 +209,25 @@ namespace dotnetCampus.ApplicationStartupManager
             return this;
         }
 
-        public StartupManager SelectNodes(StartupCategory categories)
-        {
-            _selectingCategories = categories;
-            return this;
-        }
+        // 不支持被使用
+        //public StartupManager SelectNodes(StartupCategory categories)
+        //{
+        //    _selectingCategories = categories;
+        //    return this;
+        //}
 
-        public StartupManager ForStartupTasksOfCategory(StartupCategory category,
-            Action<StartupTaskBuilder> taskBuilder)
-        {
-            _additionalBuilders.Add(builder =>
-            {
-                if (builder.Categories == category)
-                {
-                    taskBuilder(builder);
-                }
-            });
-            return this;
-        }
+        //public StartupManager ForStartupTasksOfCategory(StartupCategory category,
+        //    Action<StartupTaskBuilder> taskBuilder)
+        //{
+        //    _additionalBuilders.Add(builder =>
+        //    {
+        //        if (builder.Categories == category)
+        //        {
+        //            taskBuilder(builder);
+        //        }
+        //    });
+        //    return this;
+        //}
 
         public async void Run()
         {
@@ -254,7 +272,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 wrapper.Categories &= _selectingCategories;
             }
 
-            var taskMetadataList = ExportStartupTasks(_assembliesToBeManaged, _selectingCategories).ToList();
+            var taskMetadataList = ExportStartupTasks().ToList();
 
             foreach (var meta in taskMetadataList)
             {
@@ -294,20 +312,15 @@ namespace dotnetCampus.ApplicationStartupManager
 
             return DFSGraph(wrappers);
 
-            IEnumerable<StartupTaskMetadata> ExportStartupTasks(
-                IEnumerable<Assembly> assemblies, StartupCategory categories)
+            IEnumerable<StartupTaskMetadata> ExportStartupTasks()
             {
-                // todo 高性能的预编译框架接入
-                //foreach (var meta in AssemblyMetadataExporter.ExportStartupTasks(assemblies))
-                //{
-                //    meta.Categories &= categories;
-                //    if (meta.Categories != StartupCategory.None)
-                //    {
-                //        yield return meta;
-                //    }
-                //}
-
-                yield break;
+                foreach (var func in _startupTaskMetadataCollectorList)
+                {
+                    foreach (var taskMetadata in func())
+                    {
+                        yield return taskMetadata;
+                    }
+                }
             }
 
             void AddDependencies(StartupTaskWrapper wrapper, string afterTasks)
