@@ -13,8 +13,8 @@ namespace dotnetCampus.ApplicationStartupManager
     {
         private readonly Stopwatch _mainWatch;
 
-        private readonly ConcurrentDictionary<string, (string name, long start, long elapsed)>
-            _milestoneDictionary = new ConcurrentDictionary<string, (string, long, long)>();
+        protected ConcurrentDictionary<string, (string name, long start, long elapsed)>
+            MilestoneDictionary { get; } = new ConcurrentDictionary<string, (string, long, long)>();
 
         public StartupLoggerBase()
         {
@@ -24,11 +24,11 @@ namespace dotnetCampus.ApplicationStartupManager
 
         public void RecordTime(string milestoneName)
         {
-            var start = _milestoneDictionary.Count > 0
-                ? _milestoneDictionary.Max(x => x.Value.start + x.Value.elapsed)
+            var start = MilestoneDictionary.Count > 0
+                ? MilestoneDictionary.Max(x => x.Value.start + x.Value.elapsed)
                 : 0;
             var end = _mainWatch.ElapsedTicks;
-            _milestoneDictionary[milestoneName] =
+            MilestoneDictionary[milestoneName] =
                 (Thread.CurrentThread.Name ?? Thread.CurrentThread.ManagedThreadId.ToString(CultureInfo.InvariantCulture),
                     start, end - start);
         }
@@ -46,7 +46,7 @@ namespace dotnetCampus.ApplicationStartupManager
             {
                 var end = _mainWatch.ElapsedTicks;
                 var elapse = end - begin;
-                _milestoneDictionary[taskName] = (threadName, begin, elapse);
+                MilestoneDictionary[taskName] = (threadName, begin, elapse);
             }
         }
 
