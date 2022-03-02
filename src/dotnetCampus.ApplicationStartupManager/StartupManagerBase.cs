@@ -188,7 +188,7 @@ namespace dotnetCampus.ApplicationStartupManager
             wrapper.TaskBase = new NullObjectStartup();
             wrapper.Categories = StartupCategory.All;
 
-            if (beforeTasks?.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries) is string[] before)
+            if (beforeTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is string[] before)
             {
                 foreach (var b in before)
                 {
@@ -197,7 +197,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 }
             }
 
-            if (afterTasks?.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries) is string[] after)
+            if (afterTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is string[] after)
             {
                 foreach (var a in after)
                 {
@@ -315,7 +315,7 @@ namespace dotnetCampus.ApplicationStartupManager
 
             void AddDependencies(StartupTaskWrapper wrapper, string afterTasks)
             {
-                foreach (var task in afterTasks.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries)
+                foreach (var task in afterTasks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(CompatibleTaskName))
                 {
                     if (!taskMetadataList.Exists(metadata => metadata.Key == task)
@@ -335,7 +335,7 @@ namespace dotnetCampus.ApplicationStartupManager
 
             void AddFollowTasks(StartupTaskWrapper wrapper, string beforeTasks)
             {
-                foreach (var task in beforeTasks.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries)
+                foreach (var task in beforeTasks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(CompatibleTaskName))
                 {
                     if (!taskMetadataList.Exists(metadata => metadata.Key == task)
@@ -455,9 +455,9 @@ namespace dotnetCampus.ApplicationStartupManager
         private static string StartupTypeToKey(Type type)
             => type.Name.Remove(type.Name.Length - "startup".Length);
 
-        internal virtual Task<string> ExecuteStartupTaskAsync(StartupTaskBase startupTask,IStartupContext context, bool uiOnly)
+        internal virtual Task<string> ExecuteStartupTaskAsync(StartupTaskBase startupTask, IStartupContext context, bool uiOnly)
         {
-            return startupTask.JoinAsync(Context, uiOnly);
+            return startupTask.JoinAsync(context, uiOnly);
         }
     }
 }
