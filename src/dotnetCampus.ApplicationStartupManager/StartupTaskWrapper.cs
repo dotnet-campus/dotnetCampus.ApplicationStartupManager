@@ -20,7 +20,7 @@ namespace dotnetCampus.ApplicationStartupManager
 
         public StartupCategory Categories { get; internal set; } = StartupCategory.All;
 
-        public StartupTask StartupTask { get; internal set; }
+        public StartupTaskBase TaskBase { get; internal set; }
         public bool UIOnly { get; internal set; }
         public StartupCriticalLevel CriticalLevel { get; set; }
 
@@ -29,7 +29,7 @@ namespace dotnetCampus.ApplicationStartupManager
             StartupTaskKey = startupTaskKey;
         }
 
-        public async void ExecuteTask(IEnumerable<StartupTask> dependencies, StartupContext context)
+        public async void ExecuteTask(IEnumerable<StartupTaskBase> dependencies, StartupContext context)
         {
             await Task.WhenAll(dependencies.Select(task => task.TaskResult));
 #pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
@@ -43,7 +43,7 @@ namespace dotnetCampus.ApplicationStartupManager
                             //todo Tracer.Info($"[Startup]关键节点：{StartupTaskKey}开始执行");
                         }
 
-                        var result = await StartupTask.JoinAsync(context, UIOnly);
+                        var result = await TaskBase.JoinAsync(context, UIOnly);
 
                         if (CriticalLevel == StartupCriticalLevel.Critical)
                         {

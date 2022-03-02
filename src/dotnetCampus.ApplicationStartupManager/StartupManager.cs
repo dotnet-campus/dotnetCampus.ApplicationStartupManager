@@ -146,7 +146,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 {
                     var key = criticalNodeKeys[i];
                     var current = GetStartupTaskWrapper(key);
-                    current.StartupTask = new NullObjectStartup();
+                    current.TaskBase = new NullObjectStartup();
                     current.Categories = StartupCategory.All;
 
                     if (i - 1 >= 0)
@@ -184,7 +184,7 @@ namespace dotnetCampus.ApplicationStartupManager
         public StartupManager AddCriticalNodes(string nodeName, string beforeTasks = null, string afterTasks = null)
         {
             var wrapper = GetStartupTaskWrapper(nodeName);
-            wrapper.StartupTask = new NullObjectStartup();
+            wrapper.TaskBase = new NullObjectStartup();
             wrapper.Categories = StartupCategory.All;
 
             if (beforeTasks?.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries) is string[] before)
@@ -240,7 +240,7 @@ namespace dotnetCampus.ApplicationStartupManager
             var dispatcher = _dispatcher;
             foreach (var wrapper in Graph)
             {
-                var startupTasks = wrapper.Dependencies.Select(s => GetStartupTaskWrapper(s).StartupTask);
+                var startupTasks = wrapper.Dependencies.Select(s => GetStartupTaskWrapper(s).TaskBase);
                 if (wrapper.UIOnly)
                 {
                     await dispatcher.InvokeAsync(() => wrapper.ExecuteTask(startupTasks, Context));
@@ -251,7 +251,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 }
             }
 
-            await Graph.Last().StartupTask.TaskResult;
+            await Graph.Last().TaskBase.TaskResult;
 
             Logger.RecordTime("AllStartupTasksCompleted");
 
@@ -280,8 +280,8 @@ namespace dotnetCampus.ApplicationStartupManager
                 wrapper.UIOnly = meta.Scheduler == StartupScheduler.UIOnly;
                 wrapper.Categories = meta.Categories;
                 wrapper.CriticalLevel = meta.CriticalLevel;
-                wrapper.StartupTask = meta.Instance;
-                wrapper.StartupTask.Manager = this;
+                wrapper.TaskBase = meta.Instance;
+                wrapper.TaskBase.Manager = this;
                 wrappers.Add(wrapper);
             }
 
@@ -446,10 +446,10 @@ namespace dotnetCampus.ApplicationStartupManager
         }
 
         public Task WaitStartupTaskAsync(string startupTaskKey)
-            => GetStartupTaskWrapper(startupTaskKey).StartupTask.TaskResult;
+            => GetStartupTaskWrapper(startupTaskKey).TaskBase.TaskResult;
 
-        StartupTask IStartupManager.GetStartupTask<T>()
-            => GetStartupTaskWrapper(StartupTypeToKey(typeof(T))).StartupTask;
+        StartupTaskBase IStartupManager.GetStartupTask<T>()
+            => GetStartupTaskWrapper(StartupTypeToKey(typeof(T))).TaskBase;
 
         private static string StartupTypeToKey(Type type)
             => type.Name.Remove(type.Name.Length - "startup".Length);

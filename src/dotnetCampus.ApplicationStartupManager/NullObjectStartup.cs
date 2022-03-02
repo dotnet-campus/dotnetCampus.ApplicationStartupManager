@@ -1,6 +1,6 @@
 ﻿namespace dotnetCampus.ApplicationStartupManager
 {
-    internal sealed class NullObjectStartup : StartupTask
+    internal sealed class NullObjectStartup : StartupTaskBase
     {
 
     }

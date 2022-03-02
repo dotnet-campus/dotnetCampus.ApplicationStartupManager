@@ -31,7 +31,7 @@ namespace dotnetCampus.ApplicationStartupManager
             //Configuration = configuration;
             _waitStartupTaskAsync = waitStartupAsync;
             //Configs = configuration.CreateAppConfigurator();
-            FastFail = fastFailAction ?? (exception => StartupTask.CompletedTask);
+            FastFail = fastFailAction ?? (exception => StartupTaskBase.CompletedTask);
         }
     }
 }

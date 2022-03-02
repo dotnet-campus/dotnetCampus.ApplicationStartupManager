@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace dotnetCampus.ApplicationStartupManager
 {
-    public abstract class StartupTask
+    public abstract class StartupTaskBase
     {
         // 由于我们都在编译期间收集 Attribute 了，当然也能收集使用方到底重写了哪个 Run。
         // 这里传入的 isUIOnly 就是编译期间收集的那个属性。
@@ -49,7 +49,7 @@ namespace dotnetCampus.ApplicationStartupManager
 
         internal IStartupManager Manager { get; set; }
 
-        protected TValue FetchValue<TStartup, TValue>() where TStartup : StartupTask, IStartupValueProvider<TValue>
+        protected TValue FetchValue<TStartup, TValue>() where TStartup : StartupTaskBase, IStartupValueProvider<TValue>
         {
             var task = Manager.GetStartupTask<TStartup>();
             var v = (IStartupValueProvider<TValue>)task;
