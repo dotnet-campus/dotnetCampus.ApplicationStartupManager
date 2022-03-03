@@ -5,6 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
     <!-- <GenerateDocumentationFile>true</GenerateDocumentationFile> -->
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -42,7 +43,7 @@
 
   <ItemGroup>
     <!--<PackageReference Include="dotnetCampus.Configurations" Version="1.6.9" />-->
-    <PackageReference Include="dotnetCampus.SourceYard" Version="0.1.19369-alpha">
+    <PackageReference Include="dotnetCampus.SourceYard" Version="1.0.0-alpha01">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

@@ -38,16 +38,20 @@ namespace dotnetCampus.ApplicationStartupManager
         protected internal static Task CompletedTask =>
 #if NETFRAMEWORK
             CompletedCommonTask;
+#pragma warning disable IDE0032 // Use auto property
         private static readonly Task CompletedCommonTask = Task.FromResult(true);
+#pragma warning restore IDE0032 // Use auto property
 #else
             Task.CompletedTask;
 #endif
 
         public Task TaskResult => CompletedSource.Task;
 
-        private TaskCompletionSource<object> CompletedSource { get; } = new TaskCompletionSource<object>();
+        private TaskCompletionSource<object?> CompletedSource { get; } = new TaskCompletionSource<object?>();
 
         internal IStartupManager Manager { get; set; }
+        // 框架注入，一定不为空
+            = null!;
 
         protected TValue FetchValue<TStartup, TValue>() where TStartup : StartupTaskBase, IStartupValueProvider<TValue>
         {

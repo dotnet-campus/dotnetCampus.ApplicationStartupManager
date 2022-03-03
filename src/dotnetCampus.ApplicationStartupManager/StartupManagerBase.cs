@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -182,13 +181,13 @@ namespace dotnetCampus.ApplicationStartupManager
         /// 例如，你需要根据不同的启动条件决定不同的启动顺序，那么你可能需要使用此方法动态生成关键节点。
         /// </para>
         /// </remarks>
-        public StartupManagerBase AddCriticalNodes(string nodeName, string beforeTasks = null, string afterTasks = null)
+        public StartupManagerBase AddCriticalNodes(string nodeName, string? beforeTasks = null, string? afterTasks = null)
         {
             var wrapper = GetStartupTaskWrapper(nodeName);
             wrapper.TaskBase = new NullObjectStartup();
             wrapper.Categories = StartupCategory.All;
 
-            if (beforeTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is string[] before)
+            if (beforeTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is { } before)
             {
                 foreach (var b in before)
                 {
@@ -197,7 +196,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 }
             }
 
-            if (afterTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is string[] after)
+            if (afterTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is { } after)
             {
                 foreach (var a in after)
                 {

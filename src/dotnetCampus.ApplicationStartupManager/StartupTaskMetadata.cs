@@ -9,8 +9,6 @@ namespace dotnetCampus.ApplicationStartupManager
     public class StartupTaskMetadata
     {
         private readonly Lazy<StartupTaskBase> _taskLazy;
-        private string _afterTasks;
-        private string _beforeTasks;
 
         /// <summary>
         /// 创建 <see cref="StartupTaskMetadata"/> 的新实例。
@@ -31,27 +29,19 @@ namespace dotnetCampus.ApplicationStartupManager
         public string Key { get; }
 
         /// <summary>
-        /// 获取<see cref="StartupTaskAttribute.Categories"/> 的值，
+        /// 获取 Categories 的值
         /// </summary>
         public StartupCategory Categories { get; set; } = StartupCategory.All;
 
         /// <summary>
         /// 获取 <see cref="StartupTaskAttribute.BeforeTasks"/> 的值，如果没有标记，则为 null。
         /// </summary>
-        public string BeforeTasks
-        {
-            get => _beforeTasks;
-            set => _beforeTasks = value;
-        }
+        public string? BeforeTasks { get; set; }
 
         /// <summary>
         /// 获取 <see cref="StartupTaskAttribute.AfterTasks"/> 的值，如果没有标记，则为 null。
         /// </summary>
-        public string AfterTasks
-        {
-            get => _afterTasks;
-            set => _afterTasks = value;
-        }
+        public string? AfterTasks { get; set; }
 
         /// <summary>
         /// 获取 <see cref="StartupTaskAttribute.Scheduler"/> 的值，如果没有标记，则为 <see cref="StartupScheduler.Default"/>。
