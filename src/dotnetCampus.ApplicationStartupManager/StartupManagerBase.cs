@@ -2,10 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Mime;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 //using dotnetCampus.Configurations.Core;
@@ -216,18 +213,11 @@ namespace dotnetCampus.ApplicationStartupManager
         //    return this;
         //}
 
-        //public StartupManagerBase ForStartupTasksOfCategory(StartupCategory category,
-        //    Action<StartupTaskBuilder> taskBuilder)
-        //{
-        //    _additionalBuilders.Add(builder =>
-        //    {
-        //        if (builder.Categories == category)
-        //        {
-        //            taskBuilder(builder);
-        //        }
-        //    });
-        //    return this;
-        //}
+        public StartupManagerBase ForStartupTasksOfCategory(Action<StartupTaskBuilder> taskBuilder)
+        {
+            _additionalBuilders.Add(taskBuilder);
+            return this;
+        }
 
         public async void Run()
         {
