@@ -9,6 +9,7 @@ namespace dotnetCampus.ApplicationStartupManager
     [DebuggerDisplay("{StartupTaskKey}:{IsVisited},{VisitedFinishTime}")]
     internal class StartupTaskWrapper : IStartupTaskWrapper
     {
+        private readonly StartupManagerBase _manager;
         public HashSet<string> FollowTasks { get; private set; } = new HashSet<string>();
         public HashSet<string> Dependencies { get; private set; } = new HashSet<string>();
 
@@ -20,16 +21,19 @@ namespace dotnetCampus.ApplicationStartupManager
 
         public StartupCategory Categories { get; internal set; } = StartupCategory.All;
 
-        public StartupTask StartupTask { get; internal set; }
+        public StartupTaskBase TaskBase { get; internal set; } 
+        // 框架注入，一定不为空
+            = null!;
         public bool UIOnly { get; internal set; }
         public StartupCriticalLevel CriticalLevel { get; set; }
 
-        public StartupTaskWrapper(string startupTaskKey)
+        public StartupTaskWrapper(string startupTaskKey, StartupManagerBase manager)
         {
+            _manager = manager;
             StartupTaskKey = startupTaskKey;
         }
 
-        public async void ExecuteTask(IEnumerable<StartupTask> dependencies, StartupContext context)
+        public async void ExecuteTask(IEnumerable<StartupTaskBase> dependencies, StartupContext context)
         {
             await Task.WhenAll(dependencies.Select(task => task.TaskResult));
 #pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
@@ -43,7 +47,7 @@ namespace dotnetCampus.ApplicationStartupManager
                             //todo Tracer.Info($"[Startup]关键节点：{StartupTaskKey}开始执行");
                         }
 
-                        var result = await StartupTask.JoinAsync(context, UIOnly);
+                        var result = await _manager.ExecuteStartupTaskAsync(TaskBase, context, UIOnly);
 
                         if (CriticalLevel == StartupCriticalLevel.Critical)
                         {

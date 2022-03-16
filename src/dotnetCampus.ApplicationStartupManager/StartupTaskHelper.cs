@@ -2,8 +2,13 @@
 {
     static class StartupTaskHelper
     {
-        public static string BuildTasks(params string[] taskList)
+        public static string? BuildTasks(params string[]? taskList)
         {
+            if (taskList is null)
+            {
+                return null;
+            }
+
             if (taskList.Length > 1)
             {
                 return string.Join(";", taskList);

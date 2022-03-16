@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace dotnetCampus.ApplicationStartupManager
 {
-    public class StartupLogger : IStartupLogger
+    public class StartupLoggerBase : IStartupLogger
     {
         private readonly Stopwatch _mainWatch;
 
-        private readonly ConcurrentDictionary<string, (string name, long start, long elapsed)>
-            _milestoneDictionary = new ConcurrentDictionary<string, (string, long, long)>();
+        protected ConcurrentDictionary<string, (string threadName, long start, long elapsed)>
+            MilestoneDictionary { get; } = new ConcurrentDictionary<string, (string, long, long)>();
 
-        public StartupLogger()
+        public StartupLoggerBase()
         {
             _mainWatch = new Stopwatch();
             _mainWatch.Start();
@@ -24,11 +24,11 @@ namespace dotnetCampus.ApplicationStartupManager
 
         public void RecordTime(string milestoneName)
         {
-            var start = _milestoneDictionary.Count > 0
-                ? _milestoneDictionary.Max(x => x.Value.start + x.Value.elapsed)
+            var start = MilestoneDictionary.Count > 0
+                ? MilestoneDictionary.Max(x => x.Value.start + x.Value.elapsed)
                 : 0;
             var end = _mainWatch.ElapsedTicks;
-            _milestoneDictionary[milestoneName] =
+            MilestoneDictionary[milestoneName] =
                 (Thread.CurrentThread.Name ?? Thread.CurrentThread.ManagedThreadId.ToString(CultureInfo.InvariantCulture),
                     start, end - start);
         }
@@ -46,13 +46,12 @@ namespace dotnetCampus.ApplicationStartupManager
             {
                 var end = _mainWatch.ElapsedTicks;
                 var elapse = end - begin;
-                _milestoneDictionary[taskName] = (threadName, begin, elapse);
+                MilestoneDictionary[taskName] = (threadName, begin, elapse);
             }
         }
 
-        public void ReportResult(IReadOnlyList<IStartupTaskWrapper> wrappers)
+        public virtual void ReportResult(IReadOnlyList<IStartupTaskWrapper> wrappers)
         {
-            // todo 还没有具体实现
         }
     }
 }

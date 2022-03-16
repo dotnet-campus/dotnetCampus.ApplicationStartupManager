@@ -6,6 +6,6 @@ namespace dotnetCampus.ApplicationStartupManager
     {
         Task WaitStartupTaskAsync(string startupTaskKey);
 
-        StartupTask GetStartupTask<T>() where T : StartupTask;
+        StartupTaskBase GetStartupTask<T>() where T : StartupTaskBase;
     }
 }
