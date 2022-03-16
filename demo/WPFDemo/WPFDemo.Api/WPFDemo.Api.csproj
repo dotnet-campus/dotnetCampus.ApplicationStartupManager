@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\dotnetCampus.ApplicationStartupManager\dotnetCampus.ApplicationStartupManager.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="dotnetCampus.CommandLine" Version="3.3.1-alpha03"/>
+    <PackageReference Include="dotnetCampus.Configurations" Version="1.6.9" />
+    <PackageReference Include="dotnetCampus.TelescopeSource" Version="1.0.0-alpha02" />
+  </ItemGroup>
+
+</Project>

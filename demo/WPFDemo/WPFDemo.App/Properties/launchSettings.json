@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WPFDemo.App": {
+      "commandName": "Project",
+      "commandLineArgs": "-Name ApplicationStartupManager"
+    }
+  }
+}
