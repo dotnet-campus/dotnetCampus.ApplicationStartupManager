@@ -2,24 +2,21 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Mime;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using dotnetCampus.Configurations.Core;
+//using dotnetCampus.Configurations.Core;
 
 namespace dotnetCampus.ApplicationStartupManager
 {
-    public class StartupManager : IStartupManager
+    public class StartupManagerBase : IStartupManager
     {
         private readonly IMainThreadDispatcher _dispatcher;
 
-        /// <summary>
-        /// Builder 模式所需状态：包含当前剩余需要管理的启动任务程序集。
-        /// </summary>
-        private readonly List<Assembly> _assembliesToBeManaged = new List<Assembly>();
+        ///// <summary>
+        ///// Builder 模式所需状态：包含当前剩余需要管理的启动任务程序集。
+        ///// </summary>
+        //private readonly List<Assembly> _assembliesToBeManaged = new List<Assembly>();
 
         /// <summary>
         /// Builder 模式所需状态：包含当前所有的关键启动任务。
@@ -42,13 +39,14 @@ namespace dotnetCampus.ApplicationStartupManager
         internal ConcurrentDictionary<string, StartupTaskWrapper> StartupTaskWrappers { get; } =
             new ConcurrentDictionary<string, StartupTaskWrapper>();
 
-        private List<StartupTaskWrapper> Graph { get; set; }
+        private List<StartupTaskWrapper>? Graph { get; set; }
 
         private StartupContext Context { get; }
+        protected IStartupContext StartupContext => Context;
 
-        private IStartupLogger Logger => Context.Logger;
+        protected IStartupLogger Logger => Context.Logger;
 
-        public StartupManager(IStartupLogger logger, FileConfigurationRepo configurationRepo,
+        public StartupManagerBase(IStartupLogger logger, /*FileConfigurationRepo configurationRepo,*/
             Func<Exception, Task> fastFailAction, IMainThreadDispatcher dispatcher, bool shouldSetThreadPool = true)
         {
             if (logger == null)
@@ -56,10 +54,10 @@ namespace dotnetCampus.ApplicationStartupManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (configurationRepo is null)
-            {
-                throw new ArgumentNullException(nameof(configurationRepo));
-            }
+            //if (configurationRepo is null)
+            //{
+            //    throw new ArgumentNullException(nameof(configurationRepo));
+            //}
 
             _dispatcher = dispatcher;
 
@@ -71,40 +69,56 @@ namespace dotnetCampus.ApplicationStartupManager
                 ThreadPool.SetMinThreads(Math.Max(_workerThreads, 16), Math.Max(_completionPortThreads, 16));
             }
 
-            Context = new StartupContext(logger, configurationRepo,
+            Context = new StartupContext(logger, /*configurationRepo,*/
                 fastFailAction, WaitStartupTaskAsync);
-
             Logger.RecordTime("ManagerInitialized");
         }
 
+        ///// <summary>
+        ///// 配置被 <see cref="StartupManager"/> 管理的程序集。
+        ///// 只有被管理的程序集中的启动信息、依赖注入信息才会被执行。
+        ///// </summary>
+        ///// <param name="assemblies"></param>
+        ///// <returns></returns>
+        //public StartupManagerBase ConfigAssemblies(IEnumerable<Assembly> assemblies)
+        //{
+        //    // 可能的限制尚未完成：
+        //    // 1. Run 之后不能再调用此方法（适用于固定的程序集应用）；
+        //    // 2. 可以多次 Config 然后多次 Run（适用于动态加载的插件程序集）。
+        //    _assembliesToBeManaged.AddRange(assemblies);
+        //    return this;
+        //}
+
         /// <summary>
-        /// 配置被 <see cref="StartupManager"/> 管理的程序集。
+        /// 配置被 <see cref="StartupManagerBase"/> 管理的程序集。
         /// 只有被管理的程序集中的启动信息、依赖注入信息才会被执行。
         /// </summary>
-        /// <param name="assemblies"></param>
+        /// <param name="collector"></param>
         /// <returns></returns>
-        public StartupManager ConfigAssemblies(IEnumerable<Assembly> assemblies)
+        public virtual StartupManagerBase AddStartupTaskMetadataCollector(Func<IEnumerable<StartupTaskMetadata>> collector)
         {
             // 可能的限制尚未完成：
             // 1. Run 之后不能再调用此方法（适用于固定的程序集应用）；
             // 2. 可以多次 Config 然后多次 Run（适用于动态加载的插件程序集）。
-            _assembliesToBeManaged.AddRange(assemblies);
+            _startupTaskMetadataCollectorList.Add(collector);
             return this;
         }
+
+        private readonly ConcurrentBag<Func<IEnumerable<StartupTaskMetadata>>> _startupTaskMetadataCollectorList = new ConcurrentBag<Func<IEnumerable<StartupTaskMetadata>>>();
 
         /// <summary>
         /// 在启动流程中定义一组关键的启动节点。使用此方法定义的关键启动节点将按顺序前后依次依赖。
         /// 例如传入 A、B、C、D 四个关键启动节点，那么 A - B - C - D 将依次执行，其他任务将插入其中。
         /// </summary>
         /// <param name="criticalNodeKeys">关键启动节点的名称。</param>
-        /// <returns><see cref="StartupManager"/> 实例自身，用于使用重建者模式创建启动流程管理器。</returns>
+        /// <returns><see cref="StartupManagerBase"/> 实例自身，用于使用重建者模式创建启动流程管理器。</returns>
         /// <remarks>
         /// <para>
         /// 通常情况下你可以编写常规的 StartupTask 来添加一个关键节点，只要这个节点被众多节点声明了依赖，那么它就能视为一个关键节点。
         /// 使用此方法可以添加一些虚拟的，实际上不会执行任何启动任务的关键启动节点，用于汇总其他模块的依赖关系。
         /// </para>
         /// </remarks>
-        public StartupManager UseCriticalNodes(params string[] criticalNodeKeys)
+        public StartupManagerBase UseCriticalNodes(params string[] criticalNodeKeys)
         {
             if (criticalNodeKeys == null)
             {
@@ -129,7 +143,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 {
                     var key = criticalNodeKeys[i];
                     var current = GetStartupTaskWrapper(key);
-                    current.StartupTask = new NullObjectStartup();
+                    current.TaskBase = new NullObjectStartup();
                     current.Categories = StartupCategory.All;
 
                     if (i - 1 >= 0)
@@ -153,7 +167,7 @@ namespace dotnetCampus.ApplicationStartupManager
         /// <param name="nodeName">关键节点的名称。</param>
         /// <param name="beforeTasks">关键节点的前置节点。</param>
         /// <param name="afterTasks">关键节点的后置节点。</param>
-        /// <returns><see cref="StartupManager"/> 实例自身，用于使用重建者模式创建启动流程管理器。</returns>
+        /// <returns><see cref="StartupManagerBase"/> 实例自身，用于使用重建者模式创建启动流程管理器。</returns>
         /// <remarks>
         /// <para>
         /// 通常情况下你可以编写常规的 StartupTask 来添加一个关键节点，只要这个节点被众多节点声明了依赖，那么它就能视为一个关键节点。
@@ -164,13 +178,13 @@ namespace dotnetCampus.ApplicationStartupManager
         /// 例如，你需要根据不同的启动条件决定不同的启动顺序，那么你可能需要使用此方法动态生成关键节点。
         /// </para>
         /// </remarks>
-        public StartupManager AddCriticalNodes(string nodeName, string beforeTasks = null, string afterTasks = null)
+        public StartupManagerBase AddCriticalNodes(string nodeName, string? beforeTasks = null, string? afterTasks = null)
         {
             var wrapper = GetStartupTaskWrapper(nodeName);
-            wrapper.StartupTask = new NullObjectStartup();
+            wrapper.TaskBase = new NullObjectStartup();
             wrapper.Categories = StartupCategory.All;
 
-            if (beforeTasks?.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries) is string[] before)
+            if (beforeTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is { } before)
             {
                 foreach (var b in before)
                 {
@@ -179,7 +193,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 }
             }
 
-            if (afterTasks?.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries) is string[] after)
+            if (afterTasks?.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries) is { } after)
             {
                 foreach (var a in after)
                 {
@@ -192,22 +206,16 @@ namespace dotnetCampus.ApplicationStartupManager
             return this;
         }
 
-        public StartupManager SelectNodes(StartupCategory categories)
-        {
-            _selectingCategories = categories;
-            return this;
-        }
+        // 不支持被使用
+        //public StartupManagerBase SelectNodes(StartupCategory categories)
+        //{
+        //    _selectingCategories = categories;
+        //    return this;
+        //}
 
-        public StartupManager ForStartupTasksOfCategory(StartupCategory category,
-            Action<StartupTaskBuilder> taskBuilder)
+        public StartupManagerBase ForStartupTasksOfCategory(Action<StartupTaskBuilder> taskBuilder)
         {
-            _additionalBuilders.Add(builder =>
-            {
-                if (builder.Categories == category)
-                {
-                    taskBuilder(builder);
-                }
-            });
+            _additionalBuilders.Add(taskBuilder);
             return this;
         }
 
@@ -222,7 +230,7 @@ namespace dotnetCampus.ApplicationStartupManager
             var dispatcher = _dispatcher;
             foreach (var wrapper in Graph)
             {
-                var startupTasks = wrapper.Dependencies.Select(s => GetStartupTaskWrapper(s).StartupTask);
+                var startupTasks = wrapper.Dependencies.Select(s => GetStartupTaskWrapper(s).TaskBase);
                 if (wrapper.UIOnly)
                 {
                     await dispatcher.InvokeAsync(() => wrapper.ExecuteTask(startupTasks, Context));
@@ -233,7 +241,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 }
             }
 
-            await Graph.Last().StartupTask.TaskResult;
+            await Graph.Last().TaskBase.TaskResult;
 
             Logger.RecordTime("AllStartupTasksCompleted");
 
@@ -254,7 +262,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 wrapper.Categories &= _selectingCategories;
             }
 
-            var taskMetadataList = ExportStartupTasks(_assembliesToBeManaged, _selectingCategories).ToList();
+            var taskMetadataList = ExportStartupTasks().ToList();
 
             foreach (var meta in taskMetadataList)
             {
@@ -262,8 +270,8 @@ namespace dotnetCampus.ApplicationStartupManager
                 wrapper.UIOnly = meta.Scheduler == StartupScheduler.UIOnly;
                 wrapper.Categories = meta.Categories;
                 wrapper.CriticalLevel = meta.CriticalLevel;
-                wrapper.StartupTask = meta.Instance;
-                wrapper.StartupTask.Manager = this;
+                wrapper.TaskBase = meta.Instance;
+                wrapper.TaskBase.Manager = this;
                 wrappers.Add(wrapper);
             }
 
@@ -294,25 +302,9 @@ namespace dotnetCampus.ApplicationStartupManager
 
             return DFSGraph(wrappers);
 
-            IEnumerable<StartupTaskMetadata> ExportStartupTasks(
-                IEnumerable<Assembly> assemblies, StartupCategory categories)
-            {
-                // todo 高性能的预编译框架接入
-                //foreach (var meta in AssemblyMetadataExporter.ExportStartupTasks(assemblies))
-                //{
-                //    meta.Categories &= categories;
-                //    if (meta.Categories != StartupCategory.None)
-                //    {
-                //        yield return meta;
-                //    }
-                //}
-
-                yield break;
-            }
-
             void AddDependencies(StartupTaskWrapper wrapper, string afterTasks)
             {
-                foreach (var task in afterTasks.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries)
+                foreach (var task in afterTasks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(CompatibleTaskName))
                 {
                     if (!taskMetadataList.Exists(metadata => metadata.Key == task)
@@ -332,7 +324,7 @@ namespace dotnetCampus.ApplicationStartupManager
 
             void AddFollowTasks(StartupTaskWrapper wrapper, string beforeTasks)
             {
-                foreach (var task in beforeTasks.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries)
+                foreach (var task in beforeTasks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(CompatibleTaskName))
                 {
                     if (!taskMetadataList.Exists(metadata => metadata.Key == task)
@@ -347,6 +339,18 @@ namespace dotnetCampus.ApplicationStartupManager
                         wrapper.FollowTasks.Add(task);
                         followedWrappers.Dependencies.Add(wrapper.StartupTaskKey);
                     }
+                }
+            }
+        }
+
+        protected virtual IEnumerable<StartupTaskMetadata> ExportStartupTasks()
+        {
+            foreach (var func in _startupTaskMetadataCollectorList)
+            {
+                var taskMetadataList = func();
+                foreach (var taskMetadata in taskMetadataList)
+                {
+                    yield return taskMetadata;
                 }
             }
         }
@@ -417,7 +421,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 return wrapper;
             }
 
-            wrapper = new StartupTaskWrapper(startupTaskKey);
+            wrapper = new StartupTaskWrapper(startupTaskKey, this);
             if (StartupTaskWrappers.TryAdd(startupTaskKey, wrapper))
             {
                 return wrapper;
@@ -432,12 +436,17 @@ namespace dotnetCampus.ApplicationStartupManager
         }
 
         public Task WaitStartupTaskAsync(string startupTaskKey)
-            => GetStartupTaskWrapper(startupTaskKey).StartupTask.TaskResult;
+            => GetStartupTaskWrapper(startupTaskKey).TaskBase.TaskResult;
 
-        StartupTask IStartupManager.GetStartupTask<T>()
-            => GetStartupTaskWrapper(StartupTypeToKey(typeof(T))).StartupTask;
+        StartupTaskBase IStartupManager.GetStartupTask<T>()
+            => GetStartupTaskWrapper(StartupTypeToKey(typeof(T))).TaskBase;
 
         private static string StartupTypeToKey(Type type)
             => type.Name.Remove(type.Name.Length - "startup".Length);
+
+        internal virtual Task<string> ExecuteStartupTaskAsync(StartupTaskBase startupTask, IStartupContext context, bool uiOnly)
+        {
+            return startupTask.JoinAsync(context, uiOnly);
+        }
     }
 }
