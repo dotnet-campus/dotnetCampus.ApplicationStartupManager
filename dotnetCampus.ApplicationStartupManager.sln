@@ -1,11 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31605.320
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5D196596-756D-45C2-8A05-C8E4AB8A36E6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnetCampus.ApplicationStartupManager", "src\dotnetCampus.ApplicationStartupManager\dotnetCampus.ApplicationStartupManager.csproj", "{F7ED61F4-920C-49EB-8DC1-74B2BE6AF272}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "demo", "demo", "{A02845A0-C78A-407C-ACF2-529AE6600906}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPFDemo.App", "demo\WPFDemo\WPFDemo.App\WPFDemo.App.csproj", "{32CDDF87-194D-4A6C-9DF5-B9D21A8F45AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFDemo.Api", "demo\WPFDemo\WPFDemo.Api\WPFDemo.Api.csproj", "{68AD8EB7-A9A1-4EA7-A419-9BA1F74ACA32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFDemo.Lib1", "demo\WPFDemo\WPFDemo.Lib1\WPFDemo.Lib1.csproj", "{F4102A0A-E10A-462E-9AB1-0F80C83065D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,12 +25,27 @@ Global
 		{F7ED61F4-920C-49EB-8DC1-74B2BE6AF272}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7ED61F4-920C-49EB-8DC1-74B2BE6AF272}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7ED61F4-920C-49EB-8DC1-74B2BE6AF272}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32CDDF87-194D-4A6C-9DF5-B9D21A8F45AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32CDDF87-194D-4A6C-9DF5-B9D21A8F45AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32CDDF87-194D-4A6C-9DF5-B9D21A8F45AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32CDDF87-194D-4A6C-9DF5-B9D21A8F45AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68AD8EB7-A9A1-4EA7-A419-9BA1F74ACA32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68AD8EB7-A9A1-4EA7-A419-9BA1F74ACA32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68AD8EB7-A9A1-4EA7-A419-9BA1F74ACA32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68AD8EB7-A9A1-4EA7-A419-9BA1F74ACA32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4102A0A-E10A-462E-9AB1-0F80C83065D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4102A0A-E10A-462E-9AB1-0F80C83065D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4102A0A-E10A-462E-9AB1-0F80C83065D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4102A0A-E10A-462E-9AB1-0F80C83065D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F7ED61F4-920C-49EB-8DC1-74B2BE6AF272} = {5D196596-756D-45C2-8A05-C8E4AB8A36E6}
+		{32CDDF87-194D-4A6C-9DF5-B9D21A8F45AF} = {A02845A0-C78A-407C-ACF2-529AE6600906}
+		{68AD8EB7-A9A1-4EA7-A419-9BA1F74ACA32} = {A02845A0-C78A-407C-ACF2-529AE6600906}
+		{F4102A0A-E10A-462E-9AB1-0F80C83065D1} = {A02845A0-C78A-407C-ACF2-529AE6600906}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8AAD3A7E-EBB6-4125-9048-4CDE053D079B}

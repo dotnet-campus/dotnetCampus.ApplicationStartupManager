@@ -444,7 +444,7 @@ namespace dotnetCampus.ApplicationStartupManager
         private static string StartupTypeToKey(Type type)
             => type.Name.Remove(type.Name.Length - "startup".Length);
 
-        internal virtual Task<string> ExecuteStartupTaskAsync(StartupTaskBase startupTask, IStartupContext context, bool uiOnly)
+        protected internal virtual Task<string> ExecuteStartupTaskAsync(StartupTaskBase startupTask, IStartupContext context, bool uiOnly)
         {
             return startupTask.JoinAsync(context, uiOnly);
         }

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <StartupObject>WPFDemo.App.Program</StartupObject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WPFDemo.Api\WPFDemo.Api.csproj" />
+    <ProjectReference Include="..\WPFDemo.Lib1\WPFDemo.Lib1.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="dotnetCampus.CommandLine" Version="3.3.1-alpha03"/>
+    <PackageReference Include="dotnetCampus.TelescopeSource" Version="1.0.0-alpha02" />
+  </ItemGroup>
+
+</Project>
