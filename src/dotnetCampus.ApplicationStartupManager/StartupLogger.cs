@@ -14,7 +14,8 @@ namespace dotnetCampus.ApplicationStartupManager
         private readonly Stopwatch _mainWatch;
 
         protected ConcurrentDictionary<string, (string threadName, long start, long elapsed)>
-            MilestoneDictionary { get; } = new ConcurrentDictionary<string, (string, long, long)>();
+            MilestoneDictionary
+        { get; } = new ConcurrentDictionary<string, (string, long, long)>();
 
         public StartupLoggerBase()
         {

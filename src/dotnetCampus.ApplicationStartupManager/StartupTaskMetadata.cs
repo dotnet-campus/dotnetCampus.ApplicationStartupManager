@@ -15,7 +15,7 @@ namespace dotnetCampus.ApplicationStartupManager
         /// </summary>
         /// <param name="key">表示此 <see cref="StartupTaskBase"/> 的唯一标识符。</param>
         /// <param name="creator">此 <see cref="StartupTaskBase"/> 实例的创建方法。</param>
-        public StartupTaskMetadata( string key, Func<StartupTaskBase> creator)
+        public StartupTaskMetadata(string key, Func<StartupTaskBase> creator)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));
             _taskLazy = new Lazy<StartupTaskBase>(

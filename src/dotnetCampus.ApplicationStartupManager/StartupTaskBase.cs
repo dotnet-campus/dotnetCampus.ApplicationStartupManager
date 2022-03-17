@@ -56,7 +56,7 @@ namespace dotnetCampus.ApplicationStartupManager
         protected TValue FetchValue<TStartup, TValue>() where TStartup : StartupTaskBase, IStartupValueProvider<TValue>
         {
             var task = Manager.GetStartupTask<TStartup>();
-            var v = (IStartupValueProvider<TValue>)task;
+            var v = (IStartupValueProvider<TValue>) task;
             return v.ProvideValue();
         }
     }
