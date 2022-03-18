@@ -21,8 +21,8 @@ namespace dotnetCampus.ApplicationStartupManager
 
         public StartupCategory Categories { get; internal set; } = StartupCategory.All;
 
-        public StartupTaskBase TaskBase { get; internal set; } 
-        // 框架注入，一定不为空
+        public StartupTaskBase TaskBase { get; internal set; }
+            // 框架注入，一定不为空
             = null!;
         public bool UIOnly { get; internal set; }
         public StartupCriticalLevel CriticalLevel { get; set; }
