@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace dotnetCampus.ApplicationStartupManager
 {
+    /// <summary>
+    /// 启动任务的特性，可以让业务方用来对接，如对接预编译框架，从而收集启动任务项
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public sealed class StartupTaskAttribute : Attribute
     {

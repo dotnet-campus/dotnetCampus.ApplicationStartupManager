@@ -9,14 +9,15 @@ using System.Threading.Tasks;
 
 namespace dotnetCampus.ApplicationStartupManager
 {
+    /// <summary>
+    /// 启动任务管理器，这是此框架的入口
+    /// <para>
+    /// 期望业务方自己再基于此类型继续实现自己的业务逻辑，例如注入业务方需要的日志模块，以及构建启动任务上下文
+    /// </para>
+    /// </summary>
     public class StartupManagerBase : IStartupManager
     {
         private readonly IMainThreadDispatcher _dispatcher;
-
-        ///// <summary>
-        ///// Builder 模式所需状态：包含当前剩余需要管理的启动任务程序集。
-        ///// </summary>
-        //private readonly List<Assembly> _assembliesToBeManaged = new List<Assembly>();
 
         /// <summary>
         /// Builder 模式所需状态：包含当前所有的关键启动任务。
@@ -42,10 +43,25 @@ namespace dotnetCampus.ApplicationStartupManager
         private List<StartupTaskWrapper>? Graph { get; set; }
 
         private StartupContext Context { get; }
+
+        /// <summary>
+        /// 获取启动任务上下文信息
+        /// </summary>
         protected IStartupContext StartupContext => Context;
 
+        /// <summary>
+        /// 获取启动任务日志
+        /// </summary>
         protected IStartupLogger Logger => Context.Logger;
 
+        /// <summary>
+        /// 创建启动任务管理器
+        /// </summary>
+        /// <param name="logger">启动项的日志记录器</param>
+        /// <param name="fastFailAction">启动过程存在失败时需要执行的逻辑，也就是说此委托被框架执行时，将应该记录失败然后退出应用</param>
+        /// <param name="dispatcher">传入线程调度器，需要业务方自己实现</param>
+        /// <param name="shouldSetThreadPool">是否需要在进入启动框架时，让框架设置线程池的线程数</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public StartupManagerBase(IStartupLogger logger, /*FileConfigurationRepo configurationRepo,*/
             Func<Exception, Task> fastFailAction, IMainThreadDispatcher dispatcher, bool shouldSetThreadPool = true)
         {
@@ -213,12 +229,20 @@ namespace dotnetCampus.ApplicationStartupManager
         //    return this;
         //}
 
+        /// <summary>
+        /// 加入构建预设启动项
+        /// </summary>
+        /// <param name="taskBuilder"></param>
+        /// <returns></returns>
         public StartupManagerBase ForStartupTasksOfCategory(Action<StartupTaskBuilder> taskBuilder)
         {
             _additionalBuilders.Add(taskBuilder);
             return this;
         }
 
+        /// <summary>
+        /// 启动框架，开始执行应用程序的启动流程
+        /// </summary>
         public async void Run()
         {
             if (Graph == null)
@@ -352,6 +376,10 @@ namespace dotnetCampus.ApplicationStartupManager
             }
         }
 
+        /// <summary>
+        /// 导出所有的启动任务项，可以给子类继承，用于让子类定制获取启动任务项的方法
+        /// </summary>
+        /// <returns></returns>
         protected virtual IEnumerable<StartupTaskMetadata> ExportStartupTasks()
         {
             foreach (var func in _startupTaskMetadataCollectorList)
@@ -444,6 +472,7 @@ namespace dotnetCampus.ApplicationStartupManager
             throw new InvalidOperationException($"{startupTaskKey}既无法添加至字典，也无法从字典获取对应值");
         }
 
+        /// <inheritdoc/>
         public Task WaitStartupTaskAsync(string startupTaskKey)
             => GetStartupTaskWrapper(startupTaskKey).TaskBase.TaskResult;
 
@@ -453,6 +482,13 @@ namespace dotnetCampus.ApplicationStartupManager
         private static string StartupTypeToKey(Type type)
             => type.Name.Remove(type.Name.Length - "startup".Length);
 
+        /// <summary>
+        /// 实际执行某个具体的启动任务项的函数，可以给子类继承，用来控制具体的启动任务项执行逻辑
+        /// </summary>
+        /// <param name="startupTask"></param>
+        /// <param name="context"></param>
+        /// <param name="uiOnly"></param>
+        /// <returns></returns>
         protected internal virtual Task<string> ExecuteStartupTaskAsync(StartupTaskBase startupTask, IStartupContext context, bool uiOnly)
         {
             return startupTask.JoinAsync(context, uiOnly);
