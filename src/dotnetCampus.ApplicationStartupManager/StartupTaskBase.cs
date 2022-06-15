@@ -28,15 +28,29 @@ namespace dotnetCampus.ApplicationStartupManager
             {
                 return await Task.Run(async () =>
                 {
-                    await RunAsync(context);
-                    CompletedSource.SetResult(null);
+                    try
+                    {
+                        await RunAsync(context);
+                    }
+                    finally
+                    {
+                        // 即使有异常，也是使用 SetResult 方法，因为启动项不会因为所依赖的启动项抛出异常而不执行
+                        CompletedSource.SetResult(null);
+                    }
                     return Thread.CurrentThread.ManagedThreadId.ToString(CultureInfo.InvariantCulture);
                 });
             }
             else
             {
-                await RunAsync(context);
-                CompletedSource.SetResult(null);
+                try
+                {
+                    await RunAsync(context);
+                }
+                finally
+                {
+                    // 即使有异常，也是使用 SetResult 方法，因为启动项不会因为所依赖的启动项抛出异常而不执行
+                    CompletedSource.SetResult(null);
+                }
                 return Thread.CurrentThread.Name ??
                        Thread.CurrentThread.ManagedThreadId.ToString(CultureInfo.InvariantCulture);
             }

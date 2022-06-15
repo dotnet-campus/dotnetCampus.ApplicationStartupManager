@@ -27,6 +27,13 @@ namespace dotnetCampus.ApplicationStartupManager
         public bool UIOnly { get; internal set; }
         public StartupCriticalLevel CriticalLevel { get; set; }
 
+#if DEBUG
+        /// <summary>
+        /// 启动项是否执行完成，这是一个调试属性
+        /// </summary>
+        public Task StartupTaskResult => TaskBase.TaskResult;
+#endif
+
         public StartupTaskWrapper(string startupTaskKey, StartupManagerBase manager)
         {
             _manager = manager;
