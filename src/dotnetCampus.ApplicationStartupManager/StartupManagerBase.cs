@@ -251,7 +251,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 Logger.RecordTime("GraphBuilded");
             }
 
-            if(_shouldSetThreadPool)
+            if (_shouldSetThreadPool)
             {
                 //启动期间存在大量的线程池调用（包含IO操作），而创建的多数线程在等待 IO 时都是不会被调度的
                 //设置更多的初始化线程数可以减少启动期间的线程调度等待
@@ -281,7 +281,7 @@ namespace dotnetCampus.ApplicationStartupManager
                 Logger.ReportResult(Graph.OfType<IStartupTaskWrapper>().ToList()));
 #pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
 
-            if(_shouldSetThreadPool)
+            if (_shouldSetThreadPool)
             {
                 ThreadPool.SetMinThreads(Math.Max(_workerThreads, 8), Math.Max(_completionPortThreads, 8));
             }
